@@ -1,13 +1,24 @@
-name: 'Wait'
-description: 'Wait a designated number of milliseconds'
+name: 'auto-release-action'
+description: 'Auto release action'
 inputs:
-  milliseconds:  # id of input
-    description: 'number of milliseconds to wait'
+  github-token:
+    description: 'Token to access github'
     required: true
-    default: '1000'
+  prev-version-sha:
+    description: 'Starting point for changes, defaults to env.PREV_VERSION_SHA'
+    required: false
+    default: 'env.PREV_VERSION_SHA'
+  target-version:
+    description: 'The version to be release, defaults to env.AUTO_VERSION'
+    required: false
+    default: 'env.AUTO_VERSION'
 outputs:
-  time: # output will be available to future steps
-    description: 'The current time after waiting'
+  release-notes:
+    description: 'The generated release notes'
+  release-id:
+    description: 'Release id of the created release'
+  upload-url:
+    description: 'Upload url used for assets'
 runs:
   using: 'node16'
   main: 'dist/index.js'
