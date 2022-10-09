@@ -1,8 +1,8 @@
-# Create a JavaScript Action
+[![units-test](https://github.com/npetzall/auto-release-action/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/npetzall/auto-release-action/actions/workflows/test.yml)
+[![CodeQL](https://github.com/npetzall/auto-release-action/actions/workflows/codeql-analysis.yml/badge.svg?branch=main)](https://github.com/npetzall/auto-release-action/actions/workflows/codeql-analysis.yml)
+[![Check dist/](https://github.com/npetzall/auto-release-action/actions/workflows/check-dist.yml/badge.svg?branch=main)](https://github.com/npetzall/auto-release-action/actions/workflows/check-dist.yml)
 
-<p align="center">
-  <a href="https://github.com/actions/javascript-action/actions"><img alt="javscript-action status" src="https://github.com/actions/javascript-action/workflows/units-test/badge.svg"></a>
-</p>
+# Create a JavaScript Action
 
 Use this template to bootstrap the creation of a JavaScript action.:rocket:
 
