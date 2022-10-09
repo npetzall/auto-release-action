@@ -2,115 +2,70 @@
 [![CodeQL](https://github.com/npetzall/auto-release-action/actions/workflows/codeql-analysis.yml/badge.svg?branch=main)](https://github.com/npetzall/auto-release-action/actions/workflows/codeql-analysis.yml)
 [![Check dist/](https://github.com/npetzall/auto-release-action/actions/workflows/check-dist.yml/badge.svg?branch=main)](https://github.com/npetzall/auto-release-action/actions/workflows/check-dist.yml)
 
-# Create a JavaScript Action
+# Auto Release Action
 
-Use this template to bootstrap the creation of a JavaScript action.:rocket:
+Idea is to provide a changelog similar to [shipkit-changelog](https://github.com/shipkit/shipkit-changelog)  
 
-This template includes tests, linting, a validation workflow, publishing, and versioning guidance.
+shipkit-changelog can be used together with [shipkit-auto-version](https://github.com/shipkit/shipkit-auto-version)  
 
-If you are new, there's also a simpler introduction.  See the [Hello World JavaScript Action](https://github.com/actions/hello-world-javascript-action)
+The same way this action is supposed to work together with [auto-version-action](https://github.com/npetzall/auto-version-action)  
 
-## Create an action from this template
+## Inputs
 
-Click the `Use this Template` and provide the new repo details for your action
+## `github-token`
 
-## Code in Main
+**Required** normally this should be `${{ secrets.GITHUB_TOKEN }}` so that the repository can be accessed.
 
-Install the dependencies
+## `prev-version-sha`
 
-```bash
-npm install
-```
+Starting point for changes to be included in changelog.
 
-Run the tests :heavy_check_mark:
+**Default** `env.PREV_VERSION_SHA` (exported by auto-version-action)
 
-```bash
-$ npm test
+## `tag-prefix`
 
- PASS  ./index.test.js
-  ✓ throws invalid number (3ms)
-  ✓ wait 500 ms (504ms)
-  ✓ test runs (95ms)
-...
-```
+Used so that versions can be extracted from tags.
 
-## Change action.yml
+**Default** `v`
 
-The action.yml defines the inputs and output for your action.
+## `target-version`
 
-Update the action.yml with your name, description, inputs and outputs for your action.
+Version to be released
 
-See the [documentation](https://help.github.com/en/articles/metadata-syntax-for-github-actions)
+**Default** `env.AUTO_VERSION` (exported by auto-version-action)
 
-## Change the Code
+## Outputs
 
-Most toolkit and CI/CD operations involve async operations so the action is run in an async function.
+## `release-notes`
 
-```javascript
-const core = require('@actions/core');
-...
+The generated release notes if you want to use it in other actions
 
-async function run() {
-  try {
-      ...
-  }
-  catch (error) {
-    core.setFailed(error.message);
-  }
-}
+## `release-id`
 
-run()
-```
+Id of the release that has been created if you want to use it in other actions
 
-See the [toolkit documentation](https://github.com/actions/toolkit/blob/master/README.md#packages) for the various packages.
+## `upload-url`
 
-## Package for distribution
+Upload url if you want to add additional resources to the release
 
-GitHub Actions will run the entry point from the action.yml. Packaging assembles the code into one file that can be checked in to Git, enabling fast and reliable execution and preventing the need to check in node_modules.
+## Example usage
 
-Actions are run from GitHub repos.  Packaging the action will create a packaged action in the dist folder.
-
-Run prepare
-
-```bash
-npm run prepare
-```
-
-Since the packaged index.js is run from the dist folder.
-
-```bash
-git add dist
-```
-
-## Create a release branch
-
-Users shouldn't consume the action from master since that would be latest code and actions can break compatibility between major versions.
-
-Checkin to the v1 release branch
-
-```bash
-git checkout -b v1
-git commit -a -m "v1 release"
-```
-
-```bash
-git push origin v1
-```
-
-Note: We recommend using the `--license` option for ncc, which will create a license file for all of the production node modules used in your project.
-
-Your action is now published! :rocket:
-
-See the [versioning documentation](https://github.com/actions/toolkit/blob/master/docs/action-versioning.md)
-
-## Usage
-
-You can now consume the action by referencing the v1 branch
+### On it's own
 
 ```yaml
-uses: actions/javascript-action@v1
-with:
-  milliseconds: 1000
+    - uses: npetzall/auto-release-action@[sha]
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        prev-version-sha: [commit sha of the start of this version]
+        target-version: [the version to release]
 ```
 
-See the [actions tab](https://github.com/actions/javascript-action/actions) for runs of this action! :rocket:
+### With auto version
+```yaml
+  - uses: npetzall/auto-version-action@[sha]
+    with:
+      github-token: ${{ secrets.GITHUB_TOKEN }}
+  - uses: npetzall/auto-release-action@[sha]
+    with:
+      github-token: ${{ secrets.GITHUB_TOKEN }}
+```

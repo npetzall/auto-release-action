@@ -4,10 +4,18 @@ inputs:
   github-token:
     description: 'Token to access github'
     required: true
+  dry-run:
+    description: Create changelog but don't create a release
+    required: false
+    default: false
   prev-version-sha:
     description: 'Starting point for changes, defaults to env.PREV_VERSION_SHA'
     required: false
     default: 'env.PREV_VERSION_SHA'
+  tag-prefix:
+    description: 'Prefix used for target-version'
+    require: false
+    default: "v"
   target-version:
     description: 'The version to be release, defaults to env.AUTO_VERSION'
     required: false
