@@ -7,14 +7,14 @@ inputs:
   dry-run:
     description: Create changelog but don't create a release
     required: false
-    default: false
-  prev-version-sha:
-    description: 'Starting point for changes, defaults to env.PREV_VERSION_SHA'
+    default: "false"
+  prev-version-name:
+    description: 'Starting point for changes, defaults to env.PREV_VERSION_NAME'
     required: false
-    default: 'env.PREV_VERSION_SHA'
+    default: 'env.PREV_VERSION_NAME'
   tag-prefix:
     description: 'Prefix used for target-version'
-    require: false
+    required: false
     default: "v"
   target-version:
     description: 'The version to be release, defaults to env.AUTO_VERSION'

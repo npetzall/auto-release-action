@@ -16,11 +16,11 @@ The same way this action is supposed to work together with [auto-version-action]
 
 **Required** normally this should be `${{ secrets.GITHUB_TOKEN }}` so that the repository can be accessed.
 
-## `prev-version-sha`
+## `prev-version-name`
 
-Starting point for changes to be included in changelog.
+Starting point for changes to be included in changelog, tag name.
 
-**Default** `env.PREV_VERSION_SHA` (exported by auto-version-action)
+**Default** `env.PREV_VERSION_NAME` (exported by auto-version-action)
 
 ## `tag-prefix`
 
@@ -56,7 +56,7 @@ Upload url if you want to add additional resources to the release
     - uses: npetzall/auto-release-action@[sha]
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
-        prev-version-sha: [commit sha of the start of this version]
+        prev-version-name: [tag name]
         target-version: [the version to release]
 ```
 
