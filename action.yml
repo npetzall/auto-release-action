@@ -20,6 +20,10 @@ inputs:
     description: 'The version to be release, defaults to env.AUTO_VERSION'
     required: false
     default: 'env.AUTO_VERSION'
+  draft:
+    description: 'Create or update drafts instead of creating a release'
+    required: false
+    default: "false"
 outputs:
   release-notes:
     description: 'The generated release notes'
