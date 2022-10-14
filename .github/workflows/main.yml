@@ -1,0 +1,71 @@
+name: "Testing"
+on:
+  pull_request:
+    paths-ignore:
+      - '*.md'
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - '*.md'
+
+jobs:
+  lint-format:
+    name: Check lint and format
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ ubuntu-latest ] #windows-latest,
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v3
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run format:check
+
+  unit-test:
+    name: Unit test
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ ubuntu-latest ] #windows-latest,
+    runs-on: ${{ matrix.os }}
+    steps:
+    - uses: actions/checkout@v3
+    - run: npm ci
+    - run: npm test
+
+  workflow-test-standalone:
+    name: Workflow Standalone
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ ubuntu-latest ] #windows-latest,
+    runs-on: ${{ matrix.os }}
+    steps:
+    - uses: actions/checkout@v3
+    - uses: ./
+      id: auto-release
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        dry-run: true
+        target-version: 0.0.1
+    - run: echo "${{ steps.auto-release.outputs.release-notes }}"
+
+  workflow-test-auto-version:
+    name: Workflow auto-version-action
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ ubuntu-latest ] #windows-latest,
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./
+        id: auto-release
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          dry-run: true
+        env:
+          AUTO_VERSION: 0.0.1
+      - run: echo "${{ steps.auto-release.outputs.release-notes }}"
