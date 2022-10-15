@@ -61,11 +61,12 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
+      - uses: npetzall/auto-version-action@main
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
       - uses: ./
         id: auto-release
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           dry-run: true
-        env:
-          AUTO_VERSION: 0.0.1
       - run: echo "${{ steps.auto-release.outputs.release-notes }}"
