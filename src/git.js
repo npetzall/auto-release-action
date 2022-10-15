@@ -36,18 +36,56 @@ class Draft {
   }
 }
 
-const commits = async (github, tag) => {
-  const options = { ...baseOptions };
-  if (tag && tag.trim().length > 0) {
-    options.sha = tag.trim();
+const tagToSha = async (github, tag) => {
+  if (!tag || tag.trim().length === 0) {
+    return "";
   }
   return github
-    .paginate(github.rest.repos.listCommits, options)
-    .then((commits) => {
-      return commits.map(
-        (commit) => new Commit(commit.commit.author.name, commit.commit.message)
-      );
+    .paginate(
+      github.rest.repos.listTags,
+      {
+        owner: context.repo.owner,
+        repo: context.repo.repo,
+      },
+      (response, done) => {
+        const fullTag = response.data.find((item) => item.name === tag);
+        if (fullTag) {
+          done();
+          return [fullTag.commit.sha];
+        }
+        return [];
+      }
+    )
+    .then((tags) => {
+      return tags.length > 0 ? tags[0] : "";
     });
+};
+
+const commits = async (github, sha) => {
+  const options = { ...baseOptions };
+  if (sha && sha.length > 0) {
+    core.info("Reading commit until: " + sha);
+  } else {
+    core.info("Reading all commits");
+  }
+  return github.paginate(
+    github.rest.repos.listCommits,
+    options,
+    (response, done) => {
+      const commits = [];
+      for (const commit of response.data) {
+        if (commit.sha === sha) {
+          core.info("Matching commit found");
+          done();
+          break;
+        }
+        commits.push(
+          new Commit(commit.commit.author.name, commit.commit.message)
+        );
+      }
+      return commits;
+    }
+  );
 };
 
 const issues = async (github, issuesReferences) => {
@@ -136,6 +174,7 @@ const release = async (github, nextVersion, releaseNote) => {
     .then((response) => response.data);
 };
 
+exports.tagToSha = tagToSha;
 exports.commits = commits;
 exports.issues = issues;
 exports.draft = draft;

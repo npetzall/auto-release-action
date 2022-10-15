@@ -1,8 +1,104 @@
 const git = require("./git");
 const { Issue } = require("./git");
 
+const tagsResponse = [
+  {
+    name: "v0.1.0",
+    commit: {
+      sha: "1c5b97d5ae6c19d5c5df71a34c7fbeeda2479ccbc",
+      url: "https://api.github.com/repos/octocat/Hello-World/commits/c5b97d5ae6c19d5c5df71a34c7fbeeda2479ccbc",
+    },
+  },
+  {
+    name: "v0.1.1",
+    commit: {
+      sha: "2c5b97d5ae6c19d5c5df71a34c7fbeeda2479ccbc",
+      url: "https://api.github.com/repos/octocat/Hello-World/commits/c5b97d5ae6c19d5c5df71a34c7fbeeda2479ccbc",
+    },
+  },
+  {
+    name: "v0.2.1",
+    commit: {
+      sha: "3c5b97d5ae6c19d5c5df71a34c7fbeeda2479ccbc",
+      url: "https://api.github.com/repos/octocat/Hello-World/commits/c5b97d5ae6c19d5c5df71a34c7fbeeda2479ccbc",
+    },
+  },
+];
+
+describe("tagToSha", () => {
+  test("no tag", async () => {
+    const github = {
+      paginate() {
+        const fn = arguments[2];
+        const response = fn(
+          {
+            data: tagsResponse,
+          },
+          () => {}
+        );
+        return new Promise((resolve) => {
+          resolve(response);
+        });
+      },
+      rest: {
+        repos: {
+          listTags: {},
+        },
+      },
+    };
+    expect(await git.tagToSha(github, "")).toBe("");
+  });
+  test("tag missing", async () => {
+    const github = {
+      paginate() {
+        const fn = arguments[2];
+        const response = fn(
+          {
+            data: tagsResponse,
+          },
+          () => {}
+        );
+        return new Promise((resolve) => {
+          resolve(response);
+        });
+      },
+      rest: {
+        repos: {
+          listTags: {},
+        },
+      },
+    };
+    expect(await git.tagToSha(github, "v3.0.0")).toBe("");
+  });
+  test("tag exists", async () => {
+    const github = {
+      paginate() {
+        const fn = arguments[2];
+        const response = fn(
+          {
+            data: tagsResponse,
+          },
+          () => {}
+        );
+        return new Promise((resolve) => {
+          resolve(response);
+        });
+      },
+      rest: {
+        repos: {
+          listTags: {},
+        },
+      },
+    };
+    expect(await git.tagToSha(github, "v0.1.1")).toBe(
+      "2c5b97d5ae6c19d5c5df71a34c7fbeeda2479ccbc"
+    );
+  });
+});
+
 const listCommitsSingleExample = [
   {
+    sha: "6dcb09b5b57875f334f61aebed695e2e4193db51",
     commit: {
       url: "https://api.github.com/repos/octocat/Hello-World/git/commits/6dcb09b5b57875f334f61aebed695e2e4193db5e",
       author: {
@@ -23,6 +119,7 @@ const listCommitsSingleExample = [
 
 const simpleListCommitWithIssueReference = [
   {
+    sha: "6dcb09b5b57875f334f61aebed695e2e4193db51",
     commit: {
       url: "https://api.github.com/repos/octocat/Hello-World/git/commits/6dcb09b5b57875f334f61aebed695e2e4193db5e",
       author: {
@@ -39,12 +136,54 @@ const simpleListCommitWithIssueReference = [
   },
 ];
 
+const twoCommits = [
+  {
+    sha: "6dcb09b5b57875f334f61aebed695e2e4193db51",
+    commit: {
+      url: "https://api.github.com/repos/octocat/Hello-World/git/commits/6dcb09b5b57875f334f61aebed695e2e4193db5e",
+      author: {
+        name: "Monalisa Octocat",
+      },
+      message: "Fix all the bugs fixes #2",
+    },
+    parents: [
+      {
+        url: "https://api.github.com/repos/octocat/Hello-World/commits/6dcb09b5b57875f334f61aebed695e2e4193db5e",
+        sha: "6dcb09b5b57875f334f61aebed695e2e4193db51",
+      },
+    ],
+  },
+  {
+    sha: "6dcb09b5b57875f334f61aebed695e2e4193db52",
+    commit: {
+      url: "https://api.github.com/repos/octocat/Hello-World/git/commits/6dcb09b5b57875f334f61aebed695e2e4193db5e",
+      author: {
+        name: "Monalisa Octocat",
+      },
+      message: "Fix more bugs resolves #4",
+    },
+    parents: [
+      {
+        url: "https://api.github.com/repos/octocat/Hello-World/commits/6dcb09b5b57875f334f61aebed695e2e4193db5e",
+        sha: "6dcb09b5b57875f334f61aebed695e2e4193db52",
+      },
+    ],
+  },
+];
+
 describe("commits", () => {
   test("commits to simple commits", async () => {
     const github = {
       paginate() {
+        const fn = arguments[2];
+        const response = fn(
+          {
+            data: listCommitsSingleExample,
+          },
+          () => {}
+        );
         return new Promise((resolve) => {
-          resolve(listCommitsSingleExample);
+          resolve(response);
         });
       },
       rest: {
@@ -63,8 +202,15 @@ describe("commits", () => {
   test("commit with tickets", async () => {
     const github = {
       paginate() {
+        const fn = arguments[2];
+        const response = fn(
+          {
+            data: simpleListCommitWithIssueReference,
+          },
+          () => {}
+        );
         return new Promise((resolve) => {
-          resolve(simpleListCommitWithIssueReference);
+          resolve(response);
         });
       },
       rest: {
@@ -78,13 +224,18 @@ describe("commits", () => {
     expect(issuesReferences).toHaveLength(1);
     expect(issuesReferences[0]).toBe(2);
   });
-  test("use tag when present", async () => {
+  test("stops when sha is reached", async () => {
     const github = {
-      tag: undefined,
       paginate() {
-        github.tag = arguments[1].sha;
+        const fn = arguments[2];
+        const response = fn(
+          {
+            data: twoCommits,
+          },
+          () => {}
+        );
         return new Promise((resolve) => {
-          resolve(simpleListCommitWithIssueReference);
+          resolve(response);
         });
       },
       rest: {
@@ -93,16 +244,24 @@ describe("commits", () => {
         },
       },
     };
-    await git.commits(github, "v0.0.1");
-    expect(github.tag).toBe("v0.0.1");
+    const commits = await git.commits(
+      github,
+      "6dcb09b5b57875f334f61aebed695e2e4193db52"
+    );
+    expect(commits).toHaveLength(1);
   });
-  test("skip tag when undefined", async () => {
+  test("reads all when no sha is provided", async () => {
     const github = {
-      tag: "isSet",
       paginate() {
-        github.tag = arguments[1].sha;
+        const fn = arguments[2];
+        const response = fn(
+          {
+            data: twoCommits,
+          },
+          () => {}
+        );
         return new Promise((resolve) => {
-          resolve(simpleListCommitWithIssueReference);
+          resolve(response);
         });
       },
       rest: {
@@ -111,8 +270,8 @@ describe("commits", () => {
         },
       },
     };
-    await git.commits(github);
-    expect(github.tag).toBeUndefined();
+    const commits = await git.commits(github);
+    expect(commits).toHaveLength(2);
   });
 });
 
