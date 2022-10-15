@@ -16,6 +16,12 @@ The same way this action is supposed to work together with [auto-version-action]
 
 **Required** normally this should be `${{ secrets.GITHUB_TOKEN }}` so that the repository can be accessed.
 
+## `dry-run`
+
+Skip draft/release
+
+**Default** false
+
 ## `prev-version-name`
 
 Starting point for changes to be included in changelog, tag name.
@@ -33,6 +39,12 @@ Used so that versions can be extracted from tags.
 Version to be released
 
 **Default** `env.AUTO_VERSION` (exported by auto-version-action)
+
+## `draft`
+
+Instead of a release, create draft if missing or update the latest draft
+
+**Default** false
 
 ## Outputs
 

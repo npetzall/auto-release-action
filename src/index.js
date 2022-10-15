@@ -50,6 +50,18 @@ async function run() {
     ).asString();
 
     core.setOutput("release-notes", changelog);
+
+    if (core.getBooleanInput("dry-run")) {
+      return;
+    }
+    let release;
+    if (core.getBooleanInput("draft")) {
+      release = await git.draft(octokit, nextVersion, changelog);
+    } else {
+      release = await git.release(octokit, nextVersion, changelog);
+    }
+    core.setOutput("release-id", release.id);
+    core.setOutput("upload-url", release.upload_url);
   } catch (error) {
     core.setFailed(error.message);
   }

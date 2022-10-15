@@ -1,0 +1,41 @@
+name: "Testing"
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - '*.md'
+
+jobs:
+  draft:
+    name: Draft
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ ubuntu-latest ] #windows-latest,
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: npetzall/auto-version-action@main
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: ./
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          draft: true
+
+  release:
+    name: Release
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ ubuntu-latest ] #windows-latest,
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: npetzall/auto-version-action@main
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: ./
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}

@@ -9611,6 +9611,11 @@ module.exports = class DateString {
 const core = __nccwpck_require__(2186);
 const { context } = __nccwpck_require__(5438);
 
+const baseOptions = {
+  owner: context.repo.owner,
+  repo: context.repo.repo,
+};
+
 class Commit {
   constructor(author, message) {
     this.author = author;
@@ -9634,11 +9639,15 @@ class Issue {
   }
 }
 
+class Draft {
+  constructor(release) {
+    this.id = release.id;
+    this.created = Date.parse(release.created_at);
+  }
+}
+
 const commits = async (github, tag) => {
-  const options = {
-    owner: context.repo.owner,
-    repo: context.repo.repo,
-  };
+  const options = { ...baseOptions };
   if (tag && tag.trim().length > 0) {
     options.sha = tag.trim();
   }
@@ -9658,8 +9667,7 @@ const issues = async (github, issuesReferences) => {
   const minId = Math.min(...issuesReferences);
   core.info("Will break pagination at issue #" + minId);
   const options = {
-    owner: context.repo.owner,
-    repo: context.repo.repo,
+    ...baseOptions,
     state: "closed",
     sort: "created",
     direction: "desc",
@@ -9684,11 +9692,68 @@ const issues = async (github, issuesReferences) => {
     });
 };
 
+const draft = async (github, nextVersion, releaseNote) => {
+  const drafts = await github.paginate(
+    github.rest.repos.listReleases,
+    { ...baseOptions, per_page: 100 },
+    (response) =>
+      response.data
+        .filter((release) => release.draft)
+        .map((release) => new Draft(release))
+  );
+  if (drafts.length > 0) {
+    const draft = drafts.sort((a, b) => b.created - a.created)[0];
+    core.info("Updating draft with id: " + draft.id + ", to " + nextVersion);
+    return await github.rest.repos
+      .updateRelease({
+        ...baseOptions,
+        release_id: draft.id,
+        tag_name: nextVersion,
+        target_commitish: context.sha,
+        name: nextVersion,
+        body: releaseNote,
+        draft: true,
+      })
+      .then((response) => response.data);
+  } else {
+    core.info("Creating draft for: " + nextVersion);
+    return await github.rest.repos
+      .createRelease({
+        ...baseOptions,
+        tag_name: nextVersion,
+        target_commitish: context.sha,
+        name: nextVersion,
+        body: releaseNote,
+        draft: true,
+        prerelease: false,
+      })
+      .then((response) => response.data);
+  }
+};
+
+const release = async (github, nextVersion, releaseNote) => {
+  core.info("Creating Release: " + nextVersion);
+  return await github.rest.repos
+    .createRelease({
+      ...baseOptions,
+      tag_name: nextVersion,
+      target_commitish: context.sha,
+      name: nextVersion,
+      body: releaseNote,
+      draft: false,
+      prerelease: false,
+    })
+    .then((response) => response.data);
+};
+
 exports.commits = commits;
 exports.issues = issues;
+exports.draft = draft;
+exports.release = release;
 
 exports.Commit = Commit;
 exports.Issue = Issue;
+exports.Draft = Draft;
 
 
 /***/ }),
@@ -9922,6 +9987,18 @@ async function run() {
     ).asString();
 
     core.setOutput("release-notes", changelog);
+
+    if (core.getBooleanInput("dry-run")) {
+      return;
+    }
+    let release;
+    if (core.getBooleanInput("draft")) {
+      release = await git.draft(octokit, nextVersion, changelog);
+    } else {
+      release = await git.release(octokit, nextVersion, changelog);
+    }
+    core.setOutput("release-id", release.id);
+    core.setOutput("upload-url", release.upload_url);
   } catch (error) {
     core.setFailed(error.message);
   }

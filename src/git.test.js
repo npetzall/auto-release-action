@@ -39,20 +39,6 @@ const simpleListCommitWithIssueReference = [
   },
 ];
 
-const simpleIssueList = [
-  {
-    html_url: "https://github.com/octocat/Hello-World/issues/1347",
-    number: 1347,
-    title: "Found a bug",
-    pull_request: {
-      url: "https://api.github.com/repos/octocat/Hello-World/pulls/1347",
-      html_url: "https://github.com/octocat/Hello-World/pull/1347",
-      diff_url: "https://github.com/octocat/Hello-World/pull/1347.diff",
-      patch_url: "https://github.com/octocat/Hello-World/pull/1347.patch",
-    },
-  },
-];
-
 describe("commits", () => {
   test("commits to simple commits", async () => {
     const github = {
@@ -130,6 +116,20 @@ describe("commits", () => {
   });
 });
 
+const simpleIssueList = [
+  {
+    html_url: "https://github.com/octocat/Hello-World/issues/1347",
+    number: 1347,
+    title: "Found a bug",
+    pull_request: {
+      url: "https://api.github.com/repos/octocat/Hello-World/pulls/1347",
+      html_url: "https://github.com/octocat/Hello-World/pull/1347",
+      diff_url: "https://github.com/octocat/Hello-World/pull/1347.diff",
+      patch_url: "https://github.com/octocat/Hello-World/pull/1347.patch",
+    },
+  },
+];
+
 describe("issues", () => {
   test("fetchIssues", async () => {
     const github = {
@@ -205,5 +205,107 @@ describe("issues", () => {
     ).toBe(
       " - Something needs doing [(#5)](https://github.com/owner/repo/issues/5)"
     );
+  });
+});
+
+const simpleReleaseList = [
+  { id: 1, draft: false, created_at: "2013-02-27T19:35:32Z" },
+  { id: 2, draft: true, created_at: "2013-02-27T19:35:32Z" },
+  { id: 3, draft: true, created_at: "2014-02-27T19:35:32Z" },
+  { id: 4, draft: false, created_at: "2015-02-27T19:35:32Z" },
+  { id: 5, draft: true, created_at: "2013-02-27T19:35:32Z" },
+];
+
+describe("draft", () => {
+  test("updates latest existing draft", async () => {
+    const github = {
+      paginate() {
+        const fn = arguments[2];
+        const data = fn({
+          data: simpleReleaseList,
+        });
+        return new Promise((resolve) => resolve(data));
+      },
+      rest: {
+        repos: {
+          listReleases: {},
+          updateRelease: (params) => {
+            return new Promise((resolve) =>
+              resolve({
+                data: {
+                  ...params,
+                  id: params.release_id,
+                  upload_url: "someUploadUrl",
+                },
+              })
+            );
+          },
+        },
+      },
+    };
+    const release = await git.draft(github, "v0.0.1", "ReleaseNotes");
+    expect(release.id).toBe(3);
+    expect(release.tag_name).toBe("v0.0.1");
+    expect(release.draft).toBeTruthy();
+    expect(release.upload_url).toBe("someUploadUrl");
+  });
+  test("creates new draft", async () => {
+    const github = {
+      paginate() {
+        const fn = arguments[2];
+        fn({
+          data: [],
+        });
+        return new Promise((resolve) => resolve([]));
+      },
+      rest: {
+        repos: {
+          listReleases: {},
+          createRelease: (params) => {
+            return new Promise((resolve) =>
+              resolve({
+                data: {
+                  ...params,
+                  id: 1234,
+                  upload_url: "someUploadUrl",
+                },
+              })
+            );
+          },
+        },
+      },
+    };
+    const release = await git.draft(github, "v0.0.1", "ReleaseNotes");
+    expect(release.id).toBe(1234);
+    expect(release.tag_name).toBe("v0.0.1");
+    expect(release.draft).toBeTruthy();
+    expect(release.upload_url).toBe("someUploadUrl");
+  });
+});
+
+describe("release", () => {
+  test("create release", async () => {
+    const github = {
+      rest: {
+        repos: {
+          createRelease: (params) => {
+            return new Promise((resolve) =>
+              resolve({
+                data: {
+                  ...params,
+                  id: 567,
+                  upload_url: "someUploadUrl",
+                },
+              })
+            );
+          },
+        },
+      },
+    };
+    const release = await git.release(github, "v0.0.1", "ReleaseNotes");
+    expect(release.id).toBe(567);
+    expect(release.tag_name).toBe("v0.0.1");
+    expect(release.draft).toBeFalsy();
+    expect(release.upload_url).toBe("someUploadUrl");
   });
 });
