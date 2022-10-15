@@ -1,6 +1,8 @@
-[![units-test](https://github.com/npetzall/auto-release-action/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/npetzall/auto-release-action/actions/workflows/test.yml)
-[![CodeQL](https://github.com/npetzall/auto-release-action/actions/workflows/codeql-analysis.yml/badge.svg?branch=main)](https://github.com/npetzall/auto-release-action/actions/workflows/codeql-analysis.yml)
+[![Release](https://github.com/npetzall/auto-release-action/actions/workflows/release.yml/badge.svg?branch=main)](https://github.com/npetzall/auto-release-action/actions/workflows/release.yml)
+[![Testing](https://github.com/npetzall/auto-release-action/actions/workflows/main.yml/badge.svg?branch=main)](https://github.com/npetzall/auto-release-action/actions/workflows/main.yml)
 [![Check dist/](https://github.com/npetzall/auto-release-action/actions/workflows/check-dist.yml/badge.svg?branch=main)](https://github.com/npetzall/auto-release-action/actions/workflows/check-dist.yml)
+[![CodeQL](https://github.com/npetzall/auto-release-action/actions/workflows/codeql-analysis.yml/badge.svg?branch=main)](https://github.com/npetzall/auto-release-action/actions/workflows/codeql-analysis.yml)
+
 
 # Auto Release Action
 
