@@ -38,6 +38,7 @@ class Draft {
 
 const tagToSha = async (github, tag) => {
   if (!tag || tag.trim().length === 0) {
+    core.info("No tag provided");
     return "";
   }
   return github
@@ -50,6 +51,7 @@ const tagToSha = async (github, tag) => {
       (response, done) => {
         const fullTag = response.data.find((item) => item.name === tag);
         if (fullTag) {
+          core.info("Tag: " + tag + " has sha: " + fullTag.commit.sha);
           done();
           return [fullTag.commit.sha];
         }
