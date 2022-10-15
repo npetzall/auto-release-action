@@ -10004,7 +10004,7 @@ async function run() {
     const octokit = github.getOctokit(core.getInput("github-token"));
     const prevVersion = getPrevVersionName();
     const nextVersion = getNextVersionName();
-    const prevVersionSha = git.tagToSha(octokit, prevVersion);
+    const prevVersionSha = await git.tagToSha(octokit, prevVersion);
     const commits = await git.commits(octokit, prevVersionSha);
     core.info("Fetched " + commits.length + " from GitHub");
 
